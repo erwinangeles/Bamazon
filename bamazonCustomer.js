@@ -34,12 +34,12 @@ function beginPurchase() {
             {
                 type: "list",
                 name: "intro",
-                message: "What would you like to do?",
+                message: "Choose an option",
                 choices: ["Purchase an item", "Exit"]
             }
         ]
     ).then(function(user) {
-        if(user.intro == "Purchase an item") {
+        if(user.intro == "Purchase item") {
             inquire.prompt(
                 [
                     {
@@ -54,7 +54,7 @@ function beginPurchase() {
                     }
                 ]
             ).then(function(user) {
-                quantityCheck(user.itemID, user.quantity);
+                checkQuantity(user.itemID, user.quantity);
             })
         }
     })
@@ -62,7 +62,7 @@ function beginPurchase() {
 
 
 
-function quantityCheck(id, quantity) {
+function checkQuantity(id, quantity) {
     connection.query(`SELECT stock_quantity FROM products WHERE item_id=${id}`, function(err, res) {
         if (err) throw err;
         if ((res[0].stock_quantity > 0) && (quantity > res[0].stock_quantity)) {
@@ -70,7 +70,7 @@ function quantityCheck(id, quantity) {
                 function(err) {
                     if (err) throw err;
                     console.log("\nPurchase successful!\n");
-                    totalCost(id, quantity);
+                    total(id, quantity);
                 })
         }
         else if (res[0].stock_quantity == 0 && quantity < res[0].stock_quantity) {
@@ -78,7 +78,7 @@ function quantityCheck(id, quantity) {
         }
     });
 }
-function totalCost(id, quantity) {
+function total(id, quantity) {
     connection.query(`SELECT price FROM products WHERE item_id=${id}`, function(err, res) {
         if (err) throw err;
         console.log(`Total cost: ${res[0].price * quantity}\n`);
