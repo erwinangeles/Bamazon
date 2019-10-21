@@ -78,9 +78,6 @@ function quantityCheck(id, quantity) {
         }
     });
 }
-//"INSERT INTO products SET ?",{ flavor: "Rocky Road", price: 3.0, quantity: 50 },
-//"SELECT * FROM products" 
-
 function totalCost(id, quantity) {
     connection.query(`SELECT price FROM products WHERE item_id=${id}`, function(err, res) {
         if (err) throw err;
