@@ -2,7 +2,7 @@
   "name": "Bamazon",
   "version": "1.0.0",
   "description": "",
-  "main": "bamazon.js",
+  "main": "bamazonCustomer.js",
   "dependencies": {
     "console.table": "^0.10.0",
     "inquirer": "^7.0.0",
