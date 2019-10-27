@@ -18,28 +18,33 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
   if (err) throw err;
+  displayTable();
 });
 
-connection.query(
-    "SELECT * FROM products",
-    function(err, res) {
-      if (err) throw err;
-      console.table(res);
-      beginPurchase();
-});
+function displayTable() {
+    connection.query(
+        "SELECT * FROM products",
+        function(err, res) {
+          if (err) throw err;
+          console.table(res);
+          startPurchase();
+    });
+}
 
-function beginPurchase() {
+
+
+function startPurchase() {
     inquire.prompt(
         [
             {
                 type: "list",
                 name: "intro",
-                message: "Choose an option",
+                message: "What would you like to do?",
                 choices: ["Purchase an item", "Exit"]
             }
         ]
     ).then(function(user) {
-        if(user.intro == "Purchase item") {
+        if(user.intro == "Purchase an item") {
             inquire.prompt(
                 [
                     {
@@ -53,28 +58,32 @@ function beginPurchase() {
                       message: "Enter the quantity you would like to purchase: "
                     }
                 ]
-            ).then(function(user) {
-                checkQuantity(user.itemID, user.quantity);
+            ).then(function(data) {
+                checkQTY(data.itemID, data.quantity);
             })
+        } else if (user.intro == "Exit") {
+            connection.end();
         }
     })
 }
 
 
 
-function checkQuantity(id, quantity) {
+function checkQTY(id, qtyReq) {
     connection.query(`SELECT stock_quantity FROM products WHERE item_id=${id}`, function(err, res) {
         if (err) throw err;
-        if ((res[0].stock_quantity > 0) && (quantity > res[0].stock_quantity)) {
-            connection.query(`UPDATE products SET stock_quantity=${res[0].stock_quantity}-${quantity} WHERE item_id=${id}`,
+        if ((res[0].stock_quantity > 0) || (parseInt(qtyReq) > res[0].stock_quantity)) {
+            connection.query(`UPDATE products SET stock_quantity=${res[0].stock_quantity}-${qtyReq} WHERE item_id=${id}`,
                 function(err) {
                     if (err) throw err;
                     console.log("\nPurchase successful!\n");
-                    total(id, quantity);
+                    total(id, qtyReq);
+                    displayTable();
                 })
         }
-        else if (res[0].stock_quantity == 0 && quantity < res[0].stock_quantity) {
+        else if ((res[0].stock_quantity) == 0 || (parseInt(qtyReq) < res[0].stock_quantity)) {
             console.log("\nInsufficient quantity available!");
+            displayTable();
         }
     });
 }
@@ -82,11 +91,7 @@ function total(id, quantity) {
     connection.query(`SELECT price FROM products WHERE item_id=${id}`, function(err, res) {
         if (err) throw err;
         console.log(`Total cost: ${res[0].price * quantity}\n`);
-});
+    });
 }
-
-
-
-
 
 
